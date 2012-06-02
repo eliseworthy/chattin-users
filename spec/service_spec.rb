@@ -74,4 +74,34 @@ describe 'service' do
       attributes["bio"].should == "southern belle"
     end
   end
+  
+  describe "PUT on /api/v1/users/:id" do
+    it "should update a user" do
+      User.create(
+        name: "bookis",
+        email: "no spam",
+        password: "whatever",
+        bio: "bf")
+      put '/api/v1/users/bookis', {bio: "honey honey"}.to_json
+      
+      last_response.should be_ok
+      get '/api/v1/users/bookis'
+      attributes = JSON.parse(last_response.body)["user"]
+      attributes["bio"].should == "honey honey"
+    end
+  end 
+  
+  describe "DELETE on /api/v1/users/:id" do
+    it "should delete a user" do
+      User.create(
+        name: "bookis",
+        email: "no spam",
+        password: "whatever",
+        bio: "bf")
+      delete '/api/v1/users/bookis'
+      last_response.should be_ok
+      get '/api/v1/users/bookis'
+      last_response.status.should == 404
+    end
+  end
 end
