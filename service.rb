@@ -13,13 +13,27 @@ databases = YAML.load_file("config/database.yml")
 ActiveRecord::Base.establish_connection(databases[env])
 
 #HTTP entry points
-#get a user by name
 
+#get a user by name
 get '/api/v1/users/:name' do
   user = User.find_by_name(params[:name])
   if user
     user.to_json
   else
     error 404, {error: "user not found"}.to_json
+  end
+end
+
+#create a new user
+post '/api/v1/users' do
+  begin
+    user = User.create(JSON.parse(request.body.read))
+    if user
+      user.to_json
+    else
+      error 400, user.errors.to_json
+    end
+  rescue => e
+    error 400, e.message.to_json
   end
 end

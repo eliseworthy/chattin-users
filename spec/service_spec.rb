@@ -57,4 +57,21 @@ describe 'service' do
       last_response.status.should == 404
     end
   end
+  
+  describe "POST on /api/v1/users" do
+    it "should create a user" do
+      post '/api/v1/users', {
+        name: "trotter",
+        email: "no spam",
+        password: "whatever",
+        bio: "southern belle"
+      }.to_json
+      last_response.should be_ok
+      get '/api/v1/users/trotter'
+      attributes = JSON.parse(last_response.body)["user"]
+      attributes["name"].should == "trotter"
+      attributes["email"].should == "no spam"
+      attributes["bio"].should == "southern belle"
+    end
+  end
 end
