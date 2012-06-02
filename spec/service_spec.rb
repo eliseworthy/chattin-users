@@ -104,4 +104,26 @@ describe 'service' do
       last_response.status.should == 404
     end
   end
+  
+  describe "POST on /api/v1/users/:id/sessions" do
+    before(:each) do
+      User.create(
+        name: "bookis",
+        password: "whatever")
+    end
+    
+    it "should return the user object on valid credentials" do
+      post '/api/v1/users/bookis/sessions', {
+        password: "whatever"}.to_json
+      last_response.should be_ok
+      attributes = JSON.parse(last_response.body)["user"]
+      attributes["name"].should == "bookis"
+    end
+    
+    it "should fail on invalid credentials" do
+      post '/api/v1/users/bookis/sessions', {
+        password: "whatwhat"}.to_json
+      last_response.status.should == 400  
+    end
+  end
 end
