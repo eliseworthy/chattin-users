@@ -17,12 +17,12 @@ ActiveRecord::Base.establish_connection(databases[env])
 #HTTP entry points
 #get root
 get '/' do
-    <<-HTML
-      <ul>
-        <li><a href='/auth/google_oauth2'>Sign in with google</a></li>
-      </ul>
-    HTML
-  end
+  <<-HTML
+    <ul>
+      <li><a href='/auth/google_oauth2'>Sign in with google</a></li>
+    </ul>
+  HTML
+end
 
 #get a user by name
 get '/api/v1/users/:name' do

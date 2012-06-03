@@ -15,20 +15,20 @@ describe "client" do
       name: "elise",
       email: "elise@example.com",
       password: "password",
-      bio: "girloo")
+      uid: "1")
       
     User.create(
       name: "squilio",
       email: "no",
       password: "bushytail",
-      bio: "just a squirrel")  
+      uid: "2")  
   end
   
   it "should get a user" do 
     user = User.find_by_name("elise")
     user["name"].should == "elise"
     user["email"].should == "elise@example.com"
-    user["bio"].should == "girloo"
+    user["uid"].should == "1"
   end
   
   it "should return nil for a user not found" do
@@ -48,9 +48,9 @@ describe "client" do
   end
   
   it "should update a user" do
-    user = User.update("elise", {bio: "girly girloo"})
+    user = User.update("elise", {email: "no@example.com"})
     user["name"].should == "elise"
-    user["bio"].should == "girly girloo"
+    user["email"].should == "no@example.com"
     User.find_by_name("elise").should == user
   end
   

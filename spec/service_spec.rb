@@ -28,7 +28,7 @@ describe 'service' do
   
   describe "GET on /api/v1/users/:id" do
     before(:each) do
-      User.create(name: "elise", email: "elise@example.com", password: "abc", bio: "girl")
+      User.create(name: "elise", email: "elise@example.com", password: "abc", uid: "1")
     end
     
     it "should return a user by name" do
@@ -52,11 +52,11 @@ describe 'service' do
       attributes.should_not have_key("password")
     end
     
-    it "should return a user with a bio" do
+    it "should return a user with a uid" do
       get '/api/v1/users/elise'
       last_response.should be_ok
       attributes = JSON.parse(last_response.body)["user"]
-      attributes["bio"].should == "girl"
+      attributes["uid"].should == "1"
     end
     
     it "should return a 404 for a user that doesn't exist" do
@@ -71,14 +71,14 @@ describe 'service' do
         name: "trotter",
         email: "no spam",
         password: "whatever",
-        bio: "southern belle"
+        uid: "2"
       }.to_json
       last_response.should be_ok
       get '/api/v1/users/trotter'
       attributes = JSON.parse(last_response.body)["user"]
       attributes["name"].should == "trotter"
       attributes["email"].should == "no spam"
-      attributes["bio"].should == "southern belle"
+      attributes["uid"].should == "2"
     end
   end
   
@@ -88,13 +88,13 @@ describe 'service' do
         name: "bookis",
         email: "no spam",
         password: "whatever",
-        bio: "bf")
-      put '/api/v1/users/bookis', {bio: "honey honey"}.to_json
+        uid: "3")
+      put '/api/v1/users/bookis', {email: "honey@example.com"}.to_json
       
       last_response.should be_ok
       get '/api/v1/users/bookis'
       attributes = JSON.parse(last_response.body)["user"]
-      attributes["bio"].should == "honey honey"
+      attributes["email"].should == "honey@example.com"
     end
   end 
   
@@ -104,7 +104,7 @@ describe 'service' do
         name: "bookis",
         email: "no spam",
         password: "whatever",
-        bio: "bf")
+        uid: "3")
       delete '/api/v1/users/bookis'
       last_response.should be_ok
       get '/api/v1/users/bookis'
