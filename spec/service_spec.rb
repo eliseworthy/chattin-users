@@ -28,7 +28,7 @@ describe 'service' do
   
   describe "GET on /api/v1/users/:id" do
     before(:each) do
-      User.create(name: "elise", email: "elise@example.com", password: "abc", uid: "1")
+      User.create(name: "elise", email: "elise@example.com", uid: "1")
     end
     
     it "should return a user by name" do
@@ -45,12 +45,12 @@ describe 'service' do
       attributes["email"].should == "elise@example.com"
     end
     
-    it "should not return a user's password" do
-      get '/api/v1/users/elise'
-      last_response.should be_ok
-      attributes = JSON.parse(last_response.body)["user"]
-      attributes.should_not have_key("password")
-    end
+    # it "should not return a user's password" do
+    #   get '/api/v1/users/elise'
+    #   last_response.should be_ok
+    #   attributes = JSON.parse(last_response.body)["user"]
+    #   attributes.should_not have_key("password")
+    # end
     
     it "should return a user with a uid" do
       get '/api/v1/users/elise'
@@ -70,7 +70,6 @@ describe 'service' do
       post '/api/v1/users', {
         name: "trotter",
         email: "no spam",
-        password: "whatever",
         uid: "2"
       }.to_json
       last_response.should be_ok
@@ -87,7 +86,6 @@ describe 'service' do
       User.create(
         name: "bookis",
         email: "no spam",
-        password: "whatever",
         uid: "3")
       put '/api/v1/users/bookis', {email: "honey@example.com"}.to_json
       
@@ -103,7 +101,6 @@ describe 'service' do
       User.create(
         name: "bookis",
         email: "no spam",
-        password: "whatever",
         uid: "3")
       delete '/api/v1/users/bookis'
       last_response.should be_ok
@@ -112,25 +109,25 @@ describe 'service' do
     end
   end
   
-  describe "POST on /api/v1/users/:id/sessions" do
-    before(:each) do
-      User.create(
-        name: "bookis",
-        password: "whatever")
-    end
-    
-    it "should return the user object on valid credentials" do
-      post '/api/v1/users/bookis/sessions', {
-        password: "whatever"}.to_json
-      last_response.should be_ok
-      attributes = JSON.parse(last_response.body)["user"]
-      attributes["name"].should == "bookis"
-    end
-    
-    it "should fail on invalid credentials" do
-      post '/api/v1/users/bookis/sessions', {
-        password: "whatwhat"}.to_json
-      last_response.status.should == 400  
-    end
-  end
+  # describe "POST on /api/v1/users/:id/sessions" do
+  #   before(:each) do
+  #     User.create(
+  #       name: "bookis",
+  #     )
+  #   end
+  #   
+  #   # it "should return the user object on valid credentials" do
+  #   #       post '/api/v1/users/bookis/sessions', {
+  #   #         password: "whatever"}.to_json
+  #   #       last_response.should be_ok
+  #   #       attributes = JSON.parse(last_response.body)["user"]
+  #   #       attributes["name"].should == "bookis"
+  #   #     end
+  #   #     
+  #   #     it "should fail on invalid credentials" do
+  #   #       post '/api/v1/users/bookis/sessions', {
+  #   #         password: "whatwhat"}.to_json
+  #   #       last_response.status.should == 400  
+  #   # end
+  # end
 end

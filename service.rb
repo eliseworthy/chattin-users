@@ -4,7 +4,8 @@ require 'bundler/setup'
 require 'logger'
 require 'active_record'
 require 'sinatra'
-
+require 'omniauth'
+require 'omniauth-google-oauth2'
 require 'models/user.rb'
 
 #setting up the environment
@@ -22,6 +23,18 @@ get '/' do
       <li><a href='/auth/google_oauth2'>Sign in with google</a></li>
     </ul>
   HTML
+end
+
+#callback after google login
+get '/auth/:provider/callback' do
+  content_type 'text/plain'
+  request.env['omniauth.auth'].to_hash.inspect rescue "No Data"
+end
+  
+#failure upon login  
+get '/auth/failure' do
+  content_type 'text/plain'
+  request.env['omniauth.auth'].to_hash.inspect rescue "No Data"
 end
 
 #get a user by name
