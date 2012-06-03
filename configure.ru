@@ -13,7 +13,7 @@ GOOGLE_SECRET = ENV['CHATTIN_GOOGLE_SECRET']
 use Rack::Session::Cookie
 
 use OmniAuth::Builder do
-  provider :google_oauth2, "605746141208.apps.googleusercontent.com", "sHNsU1y5e5fjKoCII17n6xaR'
+  provider :google_oauth2, "605746141208.apps.googleusercontent.com", "sHNsU1y5e5fjKoCII17n6xaR"
 end
 
-run service.rb
+run ChattinAuth
