@@ -1,4 +1,6 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
+require 'rubygems'
+require 'bundler/setup'
 require 'logger'
 require 'active_record'
 require 'sinatra'
