@@ -19,6 +19,13 @@ describe 'service' do
     User.delete_all
   end
   
+  describe "GET on /" do
+    it "returns the login screen" do
+      get '/'
+      last_response.should be_ok
+    end
+  end
+  
   describe "GET on /api/v1/users/:id" do
     before(:each) do
       User.create(name: "elise", email: "elise@example.com", password: "abc", bio: "girl")
