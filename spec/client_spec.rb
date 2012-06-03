@@ -58,4 +58,13 @@ describe "client" do
     User.destroy("squilio").should == true
     User.find_by_name("squilio").should be_nil
   end  
+  
+  it "should verify login credentials" do
+    user = User.login("elise", "password")
+    user["name"].should == "elise"
+  end
+  
+  it "should return nil with invalid credentials" do
+    User.login("elise", "incorrectpass").should be_nil
+  end
 end
