@@ -6,27 +6,13 @@ require File.dirname(__FILE__) + '/../client'
 describe "client" do
   before(:all) do
     User.base_uri = "http://localhost:3000"
-
-    User.destroy("elise")
-    User.destroy("bookis")
-    User.destroy("squilio")
-
-    User.create(
-      name: "elise",
-      email: "elise@example.com",
-      uid: "1")
-      
-    User.create(
-      name: "squilio",
-      email: "no",
-      uid: "2")  
+    User.create({name: "elise", email: "elise@elise.com"})
   end
   
   it "should get a user" do 
-    user = User.find_by_name("elise")
+    user = User.find_by_id(user.id)
     user["name"].should == "elise"
     user["email"].should == "elise@example.com"
-    user["uid"].should == "1"
   end
   
   it "should return nil for a user not found" do

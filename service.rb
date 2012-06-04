@@ -61,9 +61,14 @@ class ChattinAuth < Sinatra::Base
                                                   user_attributes
                                                 )
           if user.save
-            authorization = user.authorizations.find_or_create_by_uid_and_provider!(authorization_attributes[:uid], authorization_attributes[:provider], authorization_attributes)
+            authorization = user.authorizations.find_or_initialize_by_uid_and_provider!(authorization_attributes[:uid], authorization_attributes[:provider], authorization_attributes)
+            if authorization.save
+              user.to_json
+            else
+              error 400, authorization.errors.to_json
+            end
           end
-          user.to_json
+          
         else
           error 400, omniauth_hash.errors.to_json
         end
@@ -79,6 +84,11 @@ class ChattinAuth < Sinatra::Base
   end
   
   #HTTP entry points
+  
+  #get all users
+  get '/api/v1/users' do
+    User.all.to_json
+  end
   
   #get a user by id
   get '/api/v1/users/:id' do
