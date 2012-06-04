@@ -18,7 +18,7 @@ class User
       raise response.body
     end
   end
-  
+     
   def self.create(attributes)
     response = Typhoeus::Request.post(
       "#{base_uri}/api/v1/users",

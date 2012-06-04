@@ -6,7 +6,8 @@ require 'active_record'
 require 'sinatra'
 require 'omniauth'
 require 'omniauth-google-oauth2'
-
+require 'models/user'
+require 'models/authorization'
 class ChattinAuth < Sinatra::Base
   #setting up the environment
   env_index = ARGV.index("-e")
@@ -15,7 +16,7 @@ class ChattinAuth < Sinatra::Base
   databases = YAML.load_file("config/database.yml")
   ActiveRecord::Base.establish_connection(databases[env])
 
-  #HTTP entry points
+  #authentication
   #get root
   get '/' do
     <<-HTML
@@ -28,20 +29,45 @@ class ChattinAuth < Sinatra::Base
   #callback after google login
   get '/auth/:provider/callback' do
     content_type 'text/plain'
-    request.env['omniauth.auth'].to_hash.inspect rescue "No Data"
+     begin
+       omniauth_hash = request.env['omniauth.auth'].to_hash
+        if omniauth_hash
+          provider   = omniauth_hash["provider"]
+          uid        = omniauth_hash["uid"]
+          name       = omniauth_hash["info"]["name"]
+          email      = omniauth_hash["info"]["email"]
+          token      = omniauth_hash["credentials"]["token"]
+          expires_at = omniauth_hash["credentials"]["expires_at"].to_i
+          attributes = {
+            name: name, 
+            email: email, 
+            uid: uid, 
+            authorizations_attributes: [provider: provider, expires_at: expires_at, token: token]
+          }
+          
+          user = User.create(attributes)
+          user.to_json
+        else
+          error 400, omniauth_hash.errors.to_json
+        end
+      rescue => e
+        error 400, e.message.to_json
+      end
   end
+  
   
   #failure upon login  
   get '/auth/failure' do
     content_type 'text/plain'
     request.env['omniauth.auth'].to_hash.inspect rescue "No Data"
   end
-
+  
+  #HTTP entry points
   #get a user by name
   get '/api/v1/users/:name' do
     user = User.find_by_name(params[:name])
     if user
-      user.to_json
+      user.authorizations.to_json
     else
       error 404, {error: "user not found"}.to_json
     end
