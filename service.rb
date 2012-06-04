@@ -8,6 +8,7 @@ require 'omniauth'
 require 'omniauth-google-oauth2'
 require 'models/user'
 require 'models/authorization'
+
 class ChattinAuth < Sinatra::Base
   #setting up the environment
   env_index = ARGV.index("-e")
@@ -21,9 +22,13 @@ class ChattinAuth < Sinatra::Base
   get '/' do
     <<-HTML
       <ul>
-        <li><a href='/auth/google_oauth2'>Sign in with google</a></li>
+        <li><a href='/authenticate'>Sign in with google</a></li>
       </ul>
     HTML
+  end
+  
+  get "/authenticate" do
+    redirect "/auth/google_oauth2"
   end
 
   #callback after google login
@@ -38,14 +43,26 @@ class ChattinAuth < Sinatra::Base
           email      = omniauth_hash["info"]["email"]
           token      = omniauth_hash["credentials"]["token"]
           expires_at = omniauth_hash["credentials"]["expires_at"].to_i
-          attributes = {
+          
+          user_attributes = {
             name: name, 
-            email: email, 
-            uid: uid, 
-            authorizations_attributes: [provider: provider, expires_at: expires_at, token: token]
+            email: email
           }
           
-          user = User.create(attributes)
+          authorization_attributes = {
+            provider: provider, 
+            expires_at: expires_at, 
+            token: token,
+            uid: uid
+          }  
+          
+          user = User.find_or_initialize_by_email(
+                                                  user_attributes[:email], 
+                                                  user_attributes
+                                                )
+          if user.save
+            authorization = user.authorizations.find_or_create_by_uid_and_provider!(authorization_attributes[:uid], authorization_attributes[:provider], authorization_attributes)
+          end
           user.to_json
         else
           error 400, omniauth_hash.errors.to_json
@@ -55,7 +72,6 @@ class ChattinAuth < Sinatra::Base
       end
   end
   
-  
   #failure upon login  
   get '/auth/failure' do
     content_type 'text/plain'
@@ -63,9 +79,10 @@ class ChattinAuth < Sinatra::Base
   end
   
   #HTTP entry points
-  #get a user by name
-  get '/api/v1/users/:name' do
-    user = User.find_by_name(params[:name])
+  
+  #get a user by id
+  get '/api/v1/users/:id' do
+    user = User.find(params[:id])
     if user
       user.to_json
     else
@@ -73,23 +90,9 @@ class ChattinAuth < Sinatra::Base
     end
   end
 
-  #create a new user
-  post '/api/v1/users' do
-    begin
-      user = User.create(JSON.parse(request.body.read))
-      if user
-        user.to_json
-      else
-        error 400, user.errors.to_json
-      end
-    rescue => e
-      error 400, e.message.to_json
-    end
-  end
-
   #update existing user
-  put '/api/v1/users/:name' do
-    user = User.find_by_name(params[:name])
+  put '/api/v1/users/:id/' do
+    user = User.find(params[:id])
     if user
       begin
         if user.update_attributes(JSON.parse(request.body.read))
@@ -106,31 +109,40 @@ class ChattinAuth < Sinatra::Base
   end
 
   #delete user
-  delete '/api/v1/users/:name' do
-    user = User.find_by_name(params[:name])
+  delete '/api/v1/users/:id' do
+    user = User.find(params[:id])
     if user
+      user.authorizations.each { |a| a.destroy }
       user.destroy
       user.to_json
     else
       error 404, {error: "user not found".to_json}
     end
   end
-
-  #verify a user name and password
-  post '/api/v1/users/:name/sessions' do
-    begin
-      attributes = JSON.parse(request.body.read)
-      user = User.find_by_name_and_password(
-        params[:name], 
-        attributes["password"]
-      )
-      if user
-        user.to_json
-      else
-        error 400, {error: "invalid login credentials"}.to_json
-      end
-    rescue => e
-      error 400, e.message.to_json
+  
+  #get authorization
+  get '/api/v1/authorizations' do
+    Authorization.all.to_json
+  end
+  
+  #get authorization
+  get '/api/v1/authorizations/:id' do
+    authorization = Authorization.find(params[:id])
+    if authorization
+      authorization.to_json
+    else
+      error 404, {error: "auth not found".to_json}
+    end
+  end
+  
+  #delete authorization
+  delete '/api/v1/authorizations/:id' do
+    authorization = Authorization.find(params[:id])
+    if authorization
+      authorization.destroy
+      status 200, {status: "auth deleted"}.to_json
+    else
+      error 404, {error: "auth not found".to_json}
     end
   end
 end  

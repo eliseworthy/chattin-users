@@ -11,13 +11,12 @@ RSpec.configure do |conf|
 end
 
 def app
-  Sinatra::Application
+  ChattinAuth
 end
 
 describe 'service' do
-  before(:each) do
-    User.delete_all
-  end
+  before { User.destroy_all }
+  let!(:user) { User.create!(name: "elise", email: "elise@example.com") }
   
   describe "GET on /" do
     it "returns the login screen" do
@@ -26,86 +25,54 @@ describe 'service' do
     end
   end
   
-  describe "GET on /api/v1/users/:id" do
-    before(:each) do
-      User.create(name: "elise", email: "elise@example.com", uid: "1")
-    end
-    
-    it "should return a user by name" do
-      get '/api/v1/users/elise'
-      last_response.should be_ok
-      attributes = JSON.parse(last_response.body)["user"]
-      attributes["name"].should == "elise"
-    end
-    
-    it "should return a user with an email" do
-      get '/api/v1/users/elise'
-      last_response.should be_ok
-      attributes = JSON.parse(last_response.body)["user"]
-      attributes["email"].should == "elise@example.com"
-    end
-    
-    # it "should not return a user's password" do
-    #   get '/api/v1/users/elise'
-    #   last_response.should be_ok
-    #   attributes = JSON.parse(last_response.body)["user"]
-    #   attributes.should_not have_key("password")
-    # end
-    
-    it "should return a user with a uid" do
-      get '/api/v1/users/elise'
-      last_response.should be_ok
-      attributes = JSON.parse(last_response.body)["user"]
-      attributes["uid"].should == "1"
-    end
-    
-    it "should return a 404 for a user that doesn't exist" do
-      get '/api/v1/users/foo'
-      last_response.status.should == 404
-    end
-  end
+  describe "REST API for users" do
+
   
-  describe "POST on /api/v1/users" do
-    it "should create a user" do
-      post '/api/v1/users', {
-        name: "trotter",
-        email: "no spam",
-        uid: "2"
-      }.to_json
-      last_response.should be_ok
-      get '/api/v1/users/trotter'
-      attributes = JSON.parse(last_response.body)["user"]
-      attributes["name"].should == "trotter"
-      attributes["email"].should == "no spam"
-      attributes["uid"].should == "2"
-    end
-  end
+     describe "GET on /api/v1/users/:id" do
+      it "should return a user with name" do
+        get "/api/v1/users/#{user.id}"
+        last_response.should be_ok
+        attributes = JSON.parse(last_response.body)["user"]
+        attributes["name"].should == "elise"
+      end
   
-  describe "PUT on /api/v1/users/:id" do
-    it "should update a user" do
-      User.create(
-        name: "bookis",
-        email: "no spam",
-        uid: "3")
-      put '/api/v1/users/bookis', {email: "honey@example.com"}.to_json
-      
-      last_response.should be_ok
-      get '/api/v1/users/bookis'
-      attributes = JSON.parse(last_response.body)["user"]
-      attributes["email"].should == "honey@example.com"
-    end
-  end 
+      it "should return a user with an email" do
+        get "/api/v1/users/#{user.id}"
+        last_response.should be_ok
+        attributes = JSON.parse(last_response.body)["user"]
+        attributes["email"].should == "elise@example.com"
+      end
   
-  describe "DELETE on /api/v1/users/:id" do
-    it "should delete a user" do
-      User.create(
-        name: "bookis",
-        email: "no spam",
-        uid: "3")
-      delete '/api/v1/users/bookis'
-      last_response.should be_ok
-      get '/api/v1/users/bookis'
-      last_response.status.should == 404
+      # it "should not return a user's password" do
+      #   get '/api/v1/users/elise'
+      #   last_response.should be_ok
+      #   attributes = JSON.parse(last_response.body)["user"]
+      #   attributes.should_not have_key("password")
+      # end
+  
+      it "should return a 404 for a user that doesn't exist" do
+        get "/api/v1/users/12345/"
+        last_response.status.should == 404
+      end
+    end
+
+    describe "PUT on /api/v1/users/:id" do
+      it "should update a user" do
+        put "/api/v1/users/#{user.id}/", {email: "honey@example.com"}.to_json
+        last_response.should be_ok
+        get "/api/v1/users/#{user.id}.json"
+        attributes = JSON.parse(last_response.body)["user"]
+        attributes["email"].should == "honey@example.com"
+      end
+    end 
+
+    describe "DELETE on /api/v1/users/:id" do
+      it "should delete a user" do
+        delete "/api/v1/users/#{user.id}.json"
+        last_response.should be_ok
+        get "/api/v1/users/#{user.id}/"
+        last_response.status.should == 404
+      end
     end
   end
   
