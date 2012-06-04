@@ -67,7 +67,7 @@ class ChattinAuth < Sinatra::Base
   get '/api/v1/users/:name' do
     user = User.find_by_name(params[:name])
     if user
-      user.authorizations.to_json
+      user.to_json
     else
       error 404, {error: "user not found"}.to_json
     end
