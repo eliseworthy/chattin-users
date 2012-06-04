@@ -8,86 +8,42 @@ require 'omniauth'
 require 'omniauth-google-oauth2'
 require 'models/user'
 require 'models/authorization'
+require 'helpers'
 
 class ChattinAuth < Sinatra::Base
+  helpers Helpers
+
   #setting up the environment
   env_index = ARGV.index("-e")
   env_arg = ARGV[env_index + 1] if env_index
   env = env_arg || ENV["SINATRA_ENV"] || "development"
   databases = YAML.load_file("config/database.yml")
   ActiveRecord::Base.establish_connection(databases[env])
-
-  #authentication
-  #get root
-  get '/' do
-    <<-HTML
-      <ul>
-        <li><a href='/authenticate'>Sign in with google</a></li>
-      </ul>
-    HTML
-  end
-  
-  get "/authenticate" do
-    redirect "/auth/google_oauth2"
-  end
-
-  #callback after google login
-  get '/auth/:provider/callback' do
-    content_type 'text/plain'
-     begin
-       omniauth_hash = request.env['omniauth.auth'].to_hash
-        if omniauth_hash
-          provider   = omniauth_hash["provider"]
-          uid        = omniauth_hash["uid"]
-          name       = omniauth_hash["info"]["name"]
-          email      = omniauth_hash["info"]["email"]
-          token      = omniauth_hash["credentials"]["token"]
-          expires_at = omniauth_hash["credentials"]["expires_at"].to_i
-          
-          user_attributes = {
-            name: name, 
-            email: email
-          }
-          
-          authorization_attributes = {
-            provider: provider, 
-            expires_at: expires_at, 
-            token: token,
-            uid: uid
-          }  
-          
-          user = User.find_or_initialize_by_email(
-                                                  user_attributes[:email], 
-                                                  user_attributes
-                                                )
-          if user.save
-            authorization = user.authorizations.find_or_initialize_by_uid_and_provider!(authorization_attributes[:uid], authorization_attributes[:provider], authorization_attributes)
-            if authorization.save
-              user.to_json
-            else
-              error 400, authorization.errors.to_json
-            end
-          end
-          
-        else
-          error 400, omniauth_hash.errors.to_json
-        end
-      rescue => e
-        error 400, e.message.to_json
-      end
-  end
-  
-  #failure upon login  
-  get '/auth/failure' do
-    content_type 'text/plain'
-    request.env['omniauth.auth'].to_hash.inspect rescue "No Data"
-  end
-  
   #HTTP entry points
   
   #get all users
   get '/api/v1/users' do
     User.all.to_json
+  end
+
+  #create user from omniauth hash
+  post '/api/v1/users/?' do
+    begin
+      user = User.create_from_omniauth(json_body)
+
+      unless user.new_record?
+        authorization = Authorization.create_from_omniauth(json_body, user.id)
+        unless authorization.new_record?
+          user.to_json
+        else
+          error 400, { errors: authorization.errors }.to_json
+        end
+      else
+        error 400, { errors: user.errors }.to_json
+      end
+    rescue => e
+      error 400, { errors: [ e.message ] }.to_json
+    end
   end
   
   #get a user by id
