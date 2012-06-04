@@ -82,7 +82,7 @@ class ChattinAuth < Sinatra::Base
   
   #get a user by id
   get '/api/v1/users/:id' do
-    user = User.find(params[:id])
+    user = User.find_by_id(params[:id]) 
     if user
       user.to_json
     else
@@ -92,7 +92,7 @@ class ChattinAuth < Sinatra::Base
 
   #update existing user
   put '/api/v1/users/:id/' do
-    user = User.find(params[:id])
+    user = User.find_by_id(params[:id])
     if user
       begin
         if user.update_attributes(JSON.parse(request.body.read))
@@ -110,7 +110,7 @@ class ChattinAuth < Sinatra::Base
 
   #delete user
   delete '/api/v1/users/:id' do
-    user = User.find(params[:id])
+    user = User.find_by_id(params[:id])
     if user
       user.authorizations.each { |a| a.destroy }
       user.destroy

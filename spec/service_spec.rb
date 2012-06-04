@@ -53,7 +53,7 @@ describe 'service' do
       it "should update a user" do
         put "/api/v1/users/#{user.id}/", {email: "honey@example.com"}.to_json
         last_response.should be_ok
-        get "/api/v1/users/#{user.id}.json"
+        get "/api/v1/users/#{user.id}"
         attributes = JSON.parse(last_response.body)["user"]
         attributes["email"].should == "honey@example.com"
       end
@@ -61,7 +61,7 @@ describe 'service' do
 
     describe "DELETE on /api/v1/users/:id" do
       it "should delete a user" do
-        delete "/api/v1/users/#{user.id}.json"
+        delete "/api/v1/users/#{user.id}"
         last_response.should be_ok
         get "/api/v1/users/#{user.id}/"
         last_response.status.should == 404
