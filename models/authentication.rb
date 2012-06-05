@@ -1,4 +1,4 @@
-class Authoentication < ActiveRecord::Base
+class Authentication < ActiveRecord::Base
   validates_uniqueness_of :uid, scope: :provider
   belongs_to :user
 
@@ -16,7 +16,11 @@ class Authoentication < ActiveRecord::Base
       user_id:    user_id
     }
 
-    auth = find_or_initialize_by_uid_and_provider(authorization_attributes[:uid], authorization_attributes[:provider], authorization_attributes)
+    auth = find_or_initialize_by_uid_and_provider(
+      authentication_attributes[:uid], 
+      authentication_attributes[:provider], 
+      authentication_attributes
+    )
     auth.save
 
     auth
