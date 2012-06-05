@@ -5,7 +5,7 @@ class CreateUsers < ActiveRecord::Migration
       t.timestamps
     end
     
-    create_table :authorizations do |t|
+    create_table :authentications do |t|
       t.string   :provider, :token, :uid
       t.datetime :expires_at
       t.integer  :user_id

@@ -1,4 +1,4 @@
-class Authorization < ActiveRecord::Base
+class Authoentication < ActiveRecord::Base
   validates_uniqueness_of :uid, scope: :provider
   belongs_to :user
 
@@ -8,7 +8,7 @@ class Authorization < ActiveRecord::Base
     token      = auth_hash["credentials"]["token"]
     uid        = auth_hash["uid"]
 
-    authorization_attributes = {
+    authentication_attributes = {
       provider:   provider,
       expires_at: expires_at,
       token:      token,
