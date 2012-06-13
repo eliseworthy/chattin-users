@@ -1,1 +1,7 @@
 db/*.sqlite3
+
+/log
+/bin
+/vendor
+/tmp
+.bundle
