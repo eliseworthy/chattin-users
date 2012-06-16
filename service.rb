@@ -23,7 +23,11 @@ class ChattinAuth < Sinatra::Base
   
   #get all users
   get '/api/v1/users' do
-    User.all.to_json
+    begin
+      User.all.to_json
+    rescue => e
+      error 400, { errors: [ e.message ] }.to_json
+    end
   end
 
   #create user from omniauth hash
@@ -88,7 +92,11 @@ class ChattinAuth < Sinatra::Base
   
   #get authentication
   get '/api/v1/authentications' do
-    Authentication.all.to_json
+    begin
+      Authentication.all.to_json
+    rescue => e
+      error 400, { errors: [ e.message ] }.to_json
+    end
   end
   
   #get authentication
