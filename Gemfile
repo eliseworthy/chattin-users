@@ -11,3 +11,5 @@ gem 'rack-test'
 gem 'omniauth'
 gem 'omniauth-google-oauth2'
 gem 'rvm'
+gem "mysql2"
+gem "i18n"

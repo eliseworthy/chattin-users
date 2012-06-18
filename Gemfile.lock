@@ -24,6 +24,7 @@ GEM
     kgio (2.7.4)
     multi_json (1.3.6)
     multipart-post (1.1.5)
+    mysql2 (0.3.11)
     oauth2 (0.6.1)
       faraday (~> 0.7)
       httpauth (~> 0.1)
@@ -70,7 +71,9 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord
+  i18n
   json
+  mysql2
   omniauth
   omniauth-google-oauth2
   rack-test
